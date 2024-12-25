@@ -8,7 +8,7 @@ import { BurgerIngredientsUI } from '../ui/burger-ingredients';
 import { RootState } from '../../services/store';
 
 export const BurgerIngredients: FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch(); // хук
 
   // Получаем данные из Redux store
   const { ingredients, loading, error } = useSelector(
@@ -16,6 +16,7 @@ export const BurgerIngredients: FC = () => {
   );
 
   useEffect(() => {
+    // запрос на получение ингредиентов
     dispatch(fetchIngredients());
   }, [dispatch]);
 
@@ -29,6 +30,7 @@ export const BurgerIngredients: FC = () => {
   const titleMainRef = useRef<HTMLHeadingElement>(null);
   const titleSaucesRef = useRef<HTMLHeadingElement>(null);
 
+  // наблюдатели для видимости секций
   const [bunsRef, inViewBuns] = useInView({
     threshold: 0
   });

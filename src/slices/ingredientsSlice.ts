@@ -2,6 +2,7 @@ import { getIngredientsApi } from '../utils/burger-api';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { TIngredient } from '../utils/types';
 
+// асинхронное действие для получения списка ингредиентов
 export const fetchIngredients = createAsyncThunk<TIngredient[], void>(
   'ingredients/fetchIngredients',
   async (_, { rejectWithValue }) => {
@@ -13,18 +14,21 @@ export const fetchIngredients = createAsyncThunk<TIngredient[], void>(
   }
 );
 
+// интерфейс состояния
 interface IngredientsState {
   ingredients: TIngredient[];
   loading: boolean;
   error: string | null;
 }
 
+// начальное состояние
 const initialState: IngredientsState = {
   ingredients: [],
   loading: false,
   error: null
 };
 
+// слайс
 export const ingredientsSlice = createSlice({
   name: 'ingredients',
   initialState,

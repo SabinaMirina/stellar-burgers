@@ -1,30 +1,50 @@
 import { FC, useMemo } from 'react';
 import { TConstructorIngredient } from '@utils-types';
+import { useDispatch, useSelector } from '../../services/store';
+import { RootState } from '../../services/store';
+import { createOrder, resetConstructor } from '../../slices/constructorSlice';
 import { BurgerConstructorUI } from '@ui';
+import { useNavigate } from 'react-router-dom';
 
 export const BurgerConstructor: FC = () => {
-  /** TODO: взять переменные constructorItems, orderRequest и orderModalData из стора */
-  const constructorItems = {
-    bun: {
-      price: 0
-    },
-    ingredients: []
-  };
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const orderRequest = false;
+  // данные из Redux Store
+  const { constructorItems, orderRequest, orderModalData } = useSelector(
+    (state: RootState) => state.burgerConstructor
+  );
 
-  const orderModalData = null;
+  const { user } = useSelector((state: RootState) => state.userAuth);
 
+  // функция оформления заказа
   const onOrderClick = () => {
-    if (!constructorItems.bun || orderRequest) return;
-  };
-  const closeOrderModal = () => {};
+    if (!user) {
+      navigate('/login');
+      return;
+    }
 
+    if (!constructorItems.bun || orderRequest) return;
+
+    const ingredientIds = [
+      constructorItems.bun._id,
+      ...constructorItems.ingredients.map((item) => item._id)
+    ];
+
+    dispatch(createOrder(ingredientIds));
+  };
+
+  // закрытие модального окна
+  const closeOrderModal = () => {
+    dispatch(resetConstructor());
+  };
+
+  // Расчет цены
   const price = useMemo(
     () =>
       (constructorItems.bun ? constructorItems.bun.price * 2 : 0) +
       constructorItems.ingredients.reduce(
-        (s: number, v: TConstructorIngredient) => s + v.price,
+        (sum: number, item: TConstructorIngredient) => sum + item.price,
         0
       ),
     [constructorItems]

@@ -7,12 +7,23 @@ import {
 } from 'react-redux';
 
 import { ingredientsSlice } from '../slices/ingredientsSlice';
-import constructorReducer from '../slices/constructorSlice';
+import { burgerConstructorSlice } from '../slices/constructorSlice';
+import { ingredientInfoSlice } from '../slices/ingredienInfotSlice';
+import { userRegisterSlice } from '../slices/registerSlice';
+import { ordersSlice } from '../slices/orderSlice';
+import { userAuthSlice } from '../slices/userAuthSlice';
 
+// корневой редюсер
 const rootReducer = combineReducers({
-  ingredients: ingredientsSlice.reducer
+  orders: ordersSlice.reducer,
+  userRegister: userRegisterSlice.reducer,
+  userAuth: userAuthSlice.reducer,
+  ingredients: ingredientsSlice.reducer,
+  ingredientInfo: ingredientInfoSlice.reducer,
+  burgerConstructor: burgerConstructorSlice.reducer
 });
 
+// хранилище redux
 const store = configureStore({
   reducer: rootReducer,
   devTools: process.env.NODE_ENV !== 'production'
