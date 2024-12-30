@@ -10,31 +10,31 @@ import {
   ProfileOrders,
   NotFound404
 } from '@pages';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 
 import { Modal } from '../modal/modal';
 import {
   BrowserRouter as Router,
   Routes,
   Route,
-  Navigate,
-  useNavigate
+  useNavigate,
+  useLocation
 } from 'react-router-dom';
 import { ProtectedRoute } from '../protected-route';
-import { useDispatch, useSelector, RootState } from '../../services/store';
+import { useDispatch } from '../../services/store';
 import { fetchUserProfile, setAuthChecked } from '../../slices/userAuthSlice';
 import { getCookie } from '../../utils/cookie';
 import { Preloader } from '../ui/preloader';
 
 const App = () => {
-  const dispatch = useDispatch(); // хук
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    // Хук проверяющий авторизацию
+    // проверка авторизации
     const initAuthCheck = async () => {
       const accessToken = getCookie('accessToken');
       if (!accessToken) {
-        dispatch(setAuthChecked(true)); // завершение авторизпации
+        dispatch(setAuthChecked(true));
         return;
       }
 
@@ -50,84 +50,129 @@ const App = () => {
 
   return (
     <Router>
-      <div className='app'>
-        <AppHeader />
+      <AppRoutes />
+    </Router>
+  );
+};
+
+const AppRoutes = () => {
+  const location = useLocation(); // Получение текущего маршрута
+  const state = location.state as { backgroundLocation?: Location }; // Состояние для отображения модального окна
+
+  return (
+    <div className='app'>
+      <AppHeader />
+      <Routes location={state?.backgroundLocation || location}>
+        {/* Главная страница */}
+        <Route path='/' element={<ConstructorPage />} />
+
+        {/* Лента заказов */}
+        <Route path='/feed' element={<Feed />} />
+
+        {/* Авторизация */}
+        <Route
+          path='/login'
+          element={
+            <ProtectedRoute onlyUnAuth>
+              <Login />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/register'
+          element={
+            <ProtectedRoute onlyUnAuth>
+              <Register />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/forgot-password'
+          element={
+            <ProtectedRoute onlyUnAuth>
+              <ForgotPassword />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/reset-password'
+          element={
+            <ProtectedRoute onlyUnAuth>
+              <ResetPassword />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Профиль пользователя */}
+        <Route
+          path='/profile'
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/profile/orders'
+          element={
+            <ProtectedRoute>
+              <ProfileOrders />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Модальные окна */}
+        <Route path='/feed/:number' element={<OrderInfo />} />
+        <Route path='/ingredients/:id' element={<IngredientDetails />} />
+        <Route
+          path='/profile/orders/:number'
+          element={
+            <ProtectedRoute>
+              <OrderInfo />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Страница 404 */}
+        <Route path='*' element={<NotFound404 />} />
+      </Routes>
+
+      {/* Если есть backgroundLocation, отображаем модальные окна */}
+      {state?.backgroundLocation && (
         <Routes>
-          {/* главная страница */}
-          <Route path='/' element={<ConstructorPage />} />
-
-          {/* лента заказов */}
-          <Route path='/feed' element={<Feed />} />
-
-          {/* авторизация */}
           <Route
-            path='/login'
+            path='/ingredients/:id'
             element={
-              <ProtectedRoute onlyUnAuth>
-                <Login />
-              </ProtectedRoute>
+              <Modal
+                title='Ingredient Details'
+                onClose={() => window.history.back()}
+              >
+                <IngredientDetails />
+              </Modal>
             }
           />
           <Route
-            path='/register'
+            path='/feed/:number'
             element={
-              <ProtectedRoute onlyUnAuth>
-                <Register />
-              </ProtectedRoute>
+              <Modal
+                title='Order Details'
+                onClose={() => window.history.back()}
+              >
+                <OrderInfo />
+              </Modal>
             }
           />
-          <Route
-            path='/forgot-password'
-            element={
-              <ProtectedRoute onlyUnAuth>
-                <ForgotPassword />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/reset-password'
-            element={
-              <ProtectedRoute onlyUnAuth>
-                <ResetPassword />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* профиль */}
-          <Route
-            path='/profile'
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/profile/orders'
-            element={
-              <ProtectedRoute>
-                <ProfileOrders />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* модалки */}
-          <Route path='/feed/:number' element={<FeedOrderModal />} />
-          <Route path='/ingredients/:id' element={<IngredientModal />} />
           <Route
             path='/profile/orders/:number'
             element={
-              <ProtectedRoute>
-                <ProfileOrderModal />
-              </ProtectedRoute>
+              <Modal title='Order Info' onClose={() => window.history.back()}>
+                <OrderInfo />
+              </Modal>
             }
           />
-
-          {/* 404 */}
-          <Route path='*' element={<NotFound404 />} />
         </Routes>
-      </div>
-    </Router>
+      )}
+    </div>
   );
 };
 

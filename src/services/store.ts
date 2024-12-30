@@ -12,9 +12,11 @@ import { ingredientInfoSlice } from '../slices/ingredienInfotSlice';
 import { userRegisterSlice } from '../slices/registerSlice';
 import { ordersSlice } from '../slices/orderSlice';
 import { userAuthSlice } from '../slices/userAuthSlice';
+import { allordersSlice } from '../slices/allOrdersSlice';
 
 // корневой редюсер
 const rootReducer = combineReducers({
+  allorders: allordersSlice.reducer,
   orders: ordersSlice.reducer,
   userRegister: userRegisterSlice.reducer,
   userAuth: userAuthSlice.reducer,

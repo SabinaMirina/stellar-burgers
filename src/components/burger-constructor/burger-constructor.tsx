@@ -4,11 +4,12 @@ import { useDispatch, useSelector } from '../../services/store';
 import { RootState } from '../../services/store';
 import { createOrder, resetConstructor } from '../../slices/constructorSlice';
 import { BurgerConstructorUI } from '@ui';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export const BurgerConstructor: FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // данные из Redux Store
   const { constructorItems, orderRequest, orderModalData } = useSelector(
@@ -20,7 +21,7 @@ export const BurgerConstructor: FC = () => {
   // функция оформления заказа
   const onOrderClick = () => {
     if (!user) {
-      navigate('/login');
+      navigate('/login', { state: { from: { pathname: '/' } } }); // Сохраняем маршрут конструктора
       return;
     }
 
@@ -32,11 +33,17 @@ export const BurgerConstructor: FC = () => {
     ];
 
     dispatch(createOrder(ingredientIds));
+
+    // Устанавливаем backgroundLocation для модального окна
+    navigate('/order-confirmation', {
+      state: { backgroundLocation: location }
+    });
   };
 
   // закрытие модального окна
   const closeOrderModal = () => {
     dispatch(resetConstructor());
+    navigate('/', { replace: true }); // Возврат на главную страницу
   };
 
   // Расчет цены
