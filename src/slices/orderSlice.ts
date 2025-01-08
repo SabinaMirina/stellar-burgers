@@ -18,9 +18,9 @@ const initialState: OrdersState = {
 
 // асинхронное действие для получения заказов
 export const fetchOrders = createAsyncThunk<
-  TOrder[], // Возвращаемый тип
-  void, // Аргументы
-  { rejectValue: string } // Тип ошибки
+  TOrder[],
+  void,
+  { rejectValue: string }
 >('orders/fetchOrders', async (_, { rejectWithValue }) => {
   try {
     return await getOrdersApi();

@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { TOrder } from '../utils/types';
 import { getFeedsApi } from '../utils/burger-api';
 
-// Интерфейс состояния
+// интерфейс состояния
 interface OrdersState {
   orders: TOrder[];
   total: number;
@@ -11,7 +11,7 @@ interface OrdersState {
   error: string | null;
 }
 
-// Начальное состояние
+// начальное состояние
 const initialState: OrdersState = {
   orders: [],
   total: 0,
@@ -20,7 +20,7 @@ const initialState: OrdersState = {
   error: null
 };
 
-// Асинхронное действие для получения всех заказов
+// получение всех заказов
 export const fetchAllOrders = createAsyncThunk<
   { orders: TOrder[]; total: number; totalToday: number },
   void,
@@ -45,7 +45,7 @@ export const fetchAllOrders = createAsyncThunk<
   }
 });
 
-// Слайс для работы с заказами
+// работа с заказами
 export const allordersSlice = createSlice({
   name: 'allOrders',
   initialState,
@@ -78,5 +78,4 @@ export const allordersSlice = createSlice({
   }
 });
 
-// Экспорт действий и редуктора
 export const { clearOrders } = allordersSlice.actions;

@@ -7,7 +7,7 @@ import { TUser } from '../utils/types'; // Импорт типа TUser
 interface UserState {
   isAuthChecked: boolean;
   isAuthenticated: boolean;
-  userData: TUser | null; // Исправляем тип
+  userData: TUser | null;
   registerError: string | null;
 }
 
@@ -19,7 +19,7 @@ const initialState: UserState = {
   registerError: null
 };
 
-// асинхронное действие для регистрации пользователя
+// регистрация пользователя
 export const registerUser = createAsyncThunk(
   'user/registerUser',
   async (

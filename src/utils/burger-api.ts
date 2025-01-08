@@ -56,7 +56,7 @@ export const fetchWithRefresh = async <T>(
     return await checkResponse<T>(res);
   } catch (err) {
     if (process.env.NODE_ENV !== 'production') {
-      console.error('Fetch error:', err); // Логируем только в dev
+      console.error('Fetch error:', err);
     }
     if ((err as { message: string }).message === 'jwt expired') {
       try {

@@ -9,7 +9,7 @@ import {
 import { setCookie, getCookie, deleteCookie } from '../utils/cookie';
 import { TUser } from '../utils/types';
 
-// Тип состояния
+// тип состояния
 interface AuthState {
   user: TUser | null;
   isAuthChecked: boolean;
@@ -21,7 +21,7 @@ interface AuthState {
   loginUserError: string | null;
 }
 
-// Начальное состояние
+// начальное состояние
 const initialState: AuthState = {
   user: null,
   isAuthChecked: false,
@@ -33,7 +33,7 @@ const initialState: AuthState = {
   loginUserError: null
 };
 
-// Логин пользователя
+// логин
 export const loginUser = createAsyncThunk<
   TUser,
   { email: string; password: string },
@@ -59,7 +59,7 @@ export const loginUser = createAsyncThunk<
   }
 });
 
-// Асинхронное действие: логаут
+// логаут
 export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
   'auth/logoutUser',
   async (_, { rejectWithValue }) => {
@@ -87,7 +87,7 @@ export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
   }
 );
 
-// Асинхронное действие: получение профиля
+// получение профиля
 export const fetchUserProfile = createAsyncThunk<
   TUser,
   void,
@@ -131,7 +131,7 @@ export const fetchUserProfile = createAsyncThunk<
   }
 });
 
-// Асинхронное действие: обновление профиля
+// обновление профиля
 export const updateUserProfile = createAsyncThunk<
   TUser,
   Partial<TUser>,
@@ -151,7 +151,7 @@ export const updateUserProfile = createAsyncThunk<
   }
 });
 
-// Слайс авторизации
+// слайс авторизации
 export const userAuthSlice = createSlice({
   name: 'auth',
   initialState,
@@ -169,7 +169,7 @@ export const userAuthSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loginUserRequest = false;
         state.user = action.payload;
-        state.isAuthChecked = true; // Успешная авторизация
+        state.isAuthChecked = true;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loginUserRequest = false;
@@ -189,13 +189,13 @@ export const userAuthSlice = createSlice({
       .addCase(fetchUserProfile.fulfilled, (state, action) => {
         state.authRequest = false;
         state.user = action.payload;
-        state.isAuthChecked = true; // Завершаем проверку
+        state.isAuthChecked = true;
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.authRequest = false;
         state.authError = action.payload || 'Ошибка авторизации';
         state.user = null;
-        state.isAuthChecked = true; // Завершаем проверку
+        state.isAuthChecked = true;
       });
   }
 });
