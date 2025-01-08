@@ -18,9 +18,9 @@ const initialState: OrdersState = {
 
 // асинхронное действие для получения заказов
 export const fetchOrders = createAsyncThunk<
-  TOrder[],
-  void,
-  { rejectValue: string }
+  TOrder[], // Возвращаемый тип
+  void, // Аргументы
+  { rejectValue: string } // Тип ошибки
 >('orders/fetchOrders', async (_, { rejectWithValue }) => {
   try {
     return await getOrdersApi();
@@ -33,7 +33,12 @@ export const fetchOrders = createAsyncThunk<
 export const ordersSlice = createSlice({
   name: 'orders',
   initialState,
-  reducers: {},
+  reducers: {
+    clearOrders(state) {
+      state.orders = [];
+      state.error = null;
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchOrders.pending, (state) => {
@@ -51,4 +56,4 @@ export const ordersSlice = createSlice({
   }
 });
 
-export default ordersSlice.reducer;
+export const { clearOrders } = ordersSlice.actions;

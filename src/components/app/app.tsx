@@ -25,28 +25,39 @@ import { useDispatch } from '../../services/store';
 import { fetchUserProfile, setAuthChecked } from '../../slices/userAuthSlice';
 import { getCookie } from '../../utils/cookie';
 import { Preloader } from '../ui/preloader';
+import { refreshToken } from '@api';
 
 const App = () => {
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    // проверка авторизации
-    const initAuthCheck = async () => {
-      const accessToken = getCookie('accessToken');
-      if (!accessToken) {
-        dispatch(setAuthChecked(true));
-        return;
-      }
+  const initAuthCheck = async () => {
+    let accessToken = getCookie('accessToken');
 
+    if (!accessToken) {
+      console.warn('Access token отсутствует, пытаемся обновить...');
       try {
-        await dispatch(fetchUserProfile()).unwrap();
-      } catch {
+        const refreshData = await refreshToken();
+        accessToken = refreshData.accessToken;
+      } catch (error) {
+        console.error('Ошибка при обновлении токена:', error);
+        localStorage.removeItem('refreshToken');
         dispatch(setAuthChecked(true));
+        return; // Завершить проверку
       }
-    };
+    }
 
+    try {
+      await dispatch(fetchUserProfile()).unwrap();
+    } catch (error) {
+      console.error('Ошибка проверки пользователя:', error);
+    } finally {
+      dispatch(setAuthChecked(true));
+    }
+  };
+
+  useEffect(() => {
     initAuthCheck();
-  }, [dispatch]);
+  }, []);
 
   return (
     <Router>
@@ -55,21 +66,17 @@ const App = () => {
   );
 };
 
-const AppRoutes = () => {
-  const location = useLocation(); // Получение текущего маршрута
-  const state = location.state as { backgroundLocation?: Location }; // Состояние для отображения модального окна
+export const AppRoutes = () => {
+  const location = useLocation();
+  const state = location.state as { background?: Location };
+  const navigate = useNavigate();
 
   return (
     <div className='app'>
       <AppHeader />
-      <Routes location={state?.backgroundLocation || location}>
-        {/* Главная страница */}
+      <Routes location={state?.background || location}>
         <Route path='/' element={<ConstructorPage />} />
-
-        {/* Лента заказов */}
         <Route path='/feed' element={<Feed />} />
-
-        {/* Авторизация */}
         <Route
           path='/login'
           element={
@@ -102,8 +109,6 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
-
-        {/* Профиль пользователя */}
         <Route
           path='/profile'
           element={
@@ -120,10 +125,8 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
-
-        {/* Модальные окна */}
-        <Route path='/feed/:number' element={<OrderInfo />} />
         <Route path='/ingredients/:id' element={<IngredientDetails />} />
+        <Route path='/feed/:number' element={<OrderInfo />} />
         <Route
           path='/profile/orders/:number'
           element={
@@ -132,20 +135,18 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
-
-        {/* Страница 404 */}
         <Route path='*' element={<NotFound404 />} />
       </Routes>
 
-      {/* Если есть backgroundLocation, отображаем модальные окна */}
-      {state?.backgroundLocation && (
+      {/* Модальные окна */}
+      {state?.background && (
         <Routes>
           <Route
             path='/ingredients/:id'
             element={
               <Modal
                 title='Ingredient Details'
-                onClose={() => window.history.back()}
+                onClose={() => navigate('/', { replace: true })}
               >
                 <IngredientDetails />
               </Modal>
@@ -156,7 +157,7 @@ const AppRoutes = () => {
             element={
               <Modal
                 title='Order Details'
-                onClose={() => window.history.back()}
+                onClose={() => navigate('/feed', { replace: true })}
               >
                 <OrderInfo />
               </Modal>
@@ -165,7 +166,10 @@ const AppRoutes = () => {
           <Route
             path='/profile/orders/:number'
             element={
-              <Modal title='Order Info' onClose={() => window.history.back()}>
+              <Modal
+                title='Order Info'
+                onClose={() => navigate('/profile/orders', { replace: true })}
+              >
                 <OrderInfo />
               </Modal>
             }
@@ -177,46 +181,3 @@ const AppRoutes = () => {
 };
 
 export default App;
-
-// компонент для модального окна заказа
-const FeedOrderModal = () => {
-  const navigate = useNavigate();
-
-  const handleClose = () => {
-    navigate('/feed', { replace: true });
-  };
-
-  return (
-    <Modal title='Order Details' onClose={handleClose}>
-      <OrderInfo />
-    </Modal>
-  );
-};
-
-const IngredientModal = () => {
-  const navigate = useNavigate();
-
-  const handleClose = () => {
-    navigate('/', { replace: true });
-  };
-
-  return (
-    <Modal title='Ingredient Details' onClose={handleClose}>
-      <IngredientDetails />
-    </Modal>
-  );
-};
-
-const ProfileOrderModal = () => {
-  const navigate = useNavigate();
-
-  const handleClose = () => {
-    navigate('/profile/orders', { replace: true });
-  };
-
-  return (
-    <Modal title='Order Info' onClose={handleClose}>
-      <OrderInfo />
-    </Modal>
-  );
-};

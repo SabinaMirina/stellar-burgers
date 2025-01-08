@@ -44,10 +44,11 @@ export const fetchWithRefresh = async <T>(
     return await checkResponse<T>(res);
   } catch (err) {
     if ((err as { message: string }).message === 'jwt expired') {
+      console.warn('Токен истёк, обновляем...');
       const refreshData = await refreshToken();
       if (options.headers) {
         (options.headers as { [key: string]: string }).authorization =
-          refreshData.accessToken;
+          refreshData.accessToken.split('Bearer ')[1];
       }
       const res = await fetch(url, options);
       return await checkResponse<T>(res);

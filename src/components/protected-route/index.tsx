@@ -12,7 +12,6 @@ export const ProtectedRoute = ({
   onlyUnAuth,
   children
 }: ProtectedRouteProps) => {
-  // информация об авторизации
   const { isAuthChecked, user } = useSelector(
     (state: RootState) => state.userAuth
   );
@@ -22,12 +21,10 @@ export const ProtectedRoute = ({
     return <Preloader />;
   }
 
-  // пользователь уже авторизован
   if (onlyUnAuth && user) {
     return <Navigate replace to='/profile' />;
   }
 
-  // пользователь не авторизован
   if (!onlyUnAuth && !user) {
     return <Navigate replace to='/login' state={{ from: location }} />;
   }

@@ -4,6 +4,7 @@ import { FC, useEffect } from 'react';
 import { useDispatch, useSelector } from '../../services/store';
 import { RootState } from '../../services/store';
 import { fetchOrders } from '../../slices/orderSlice';
+import { fetchUserProfile } from '../../slices/userAuthSlice';
 
 export const ProfileOrders: FC = () => {
   const dispatch = useDispatch();
@@ -11,9 +12,19 @@ export const ProfileOrders: FC = () => {
     (state: RootState) => state.orders
   );
 
-  // загрузка заказов при монтировании компонента
   useEffect(() => {
-    dispatch(fetchOrders());
+    const checkAuthAndFetchOrders = async () => {
+      try {
+        // Проверяем авторизацию
+        await dispatch(fetchUserProfile()).unwrap();
+        // Загружаем заказы
+        dispatch(fetchOrders());
+      } catch (error) {
+        console.error('Authorization or order fetching failed:', error);
+      }
+    };
+
+    checkAuthAndFetchOrders();
   }, [dispatch]);
 
   if (loading) {

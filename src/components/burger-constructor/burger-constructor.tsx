@@ -21,7 +21,7 @@ export const BurgerConstructor: FC = () => {
   // функция оформления заказа
   const onOrderClick = () => {
     if (!user) {
-      navigate('/login', { state: { from: { pathname: '/' } } }); // Сохраняем маршрут конструктора
+      navigate('/login', { state: { from: location.pathname } }); // Сохраняем текущий маршрут
       return;
     }
 
@@ -36,7 +36,7 @@ export const BurgerConstructor: FC = () => {
 
     // Устанавливаем backgroundLocation для модального окна
     navigate('/order-confirmation', {
-      state: { backgroundLocation: location }
+      state: { background: location }
     });
   };
 

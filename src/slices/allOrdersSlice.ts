@@ -27,22 +27,37 @@ export const fetchAllOrders = createAsyncThunk<
   { rejectValue: string }
 >('orders/fetchAllOrders', async (_, { rejectWithValue }) => {
   try {
-    const data = await getFeedsApi(); // Используем getFeedsApi для получения всех заказов
+    const data = await getFeedsApi();
+    if (!data.success) {
+      return rejectWithValue('API did not return success');
+    }
     return {
       orders: data.orders,
       total: data.total,
       totalToday: data.totalToday
     };
   } catch (error: any) {
-    return rejectWithValue(error.message || 'Failed to fetch all orders');
+    return rejectWithValue(
+      typeof error === 'string'
+        ? error
+        : error.message || 'Failed to fetch all orders'
+    );
   }
 });
 
-// Слайс
+// Слайс для работы с заказами
 export const allordersSlice = createSlice({
-  name: 'orders',
+  name: 'allOrders',
   initialState,
-  reducers: {},
+  reducers: {
+    clearOrders(state) {
+      state.orders = [];
+      state.total = 0;
+      state.totalToday = 0;
+      state.error = null;
+      state.loading = false;
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchAllOrders.pending, (state) => {
@@ -57,7 +72,11 @@ export const allordersSlice = createSlice({
       })
       .addCase(fetchAllOrders.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'Error fetching all orders';
+        state.error =
+          action.payload || 'Unknown error occurred while fetching orders';
       });
   }
 });
+
+// Экспорт действий и редуктора
+export const { clearOrders } = allordersSlice.actions;

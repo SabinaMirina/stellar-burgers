@@ -3,15 +3,17 @@ import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
 import { RootState, useSelector } from '../../services/store';
+import { useParams } from 'react-router-dom';
 
 export const OrderInfo: FC = () => {
-  // данные из стора
-  const orderData = useSelector((state: RootState) => state.orders.orders[0]); // Берём первый заказ для примера
+  const { number } = useParams<{ number: string }>();
+  const orders = useSelector((state: RootState) => state.allorders.orders);
   const ingredients = useSelector(
     (state: RootState) => state.ingredients.ingredients
   );
 
-  //данные для отображения
+  const orderData = orders.find((order) => order.number === Number(number));
+
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
 
@@ -37,7 +39,7 @@ export const OrderInfo: FC = () => {
 
         return acc;
       },
-      {} as TIngredientsWithCount
+      {}
     );
 
     const total = Object.values(ingredientsInfo).reduce(

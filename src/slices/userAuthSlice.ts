@@ -1,9 +1,10 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import {
   loginUserApi,
   logoutApi,
   getUserApi,
-  updateUserApi
+  updateUserApi,
+  refreshToken
 } from '../utils/burger-api';
 import { setCookie, getCookie, deleteCookie } from '../utils/cookie';
 import { TUser } from '../utils/types';
@@ -20,7 +21,7 @@ interface AuthState {
   loginUserError: string | null;
 }
 
-// начальное состояние
+// Начальное состояние
 const initialState: AuthState = {
   user: null,
   isAuthChecked: false,
@@ -32,81 +33,108 @@ const initialState: AuthState = {
   loginUserError: null
 };
 
-// Асинхронные действия
-// Логин
-export const loginUser = createAsyncThunk(
-  'auth/loginUser',
-  async (
-    userData: { email: string; password: string },
-    { rejectWithValue }
-  ) => {
-    try {
-      const response = await loginUserApi(userData);
-      setCookie('accessToken', response.accessToken);
-      localStorage.setItem('refreshToken', response.refreshToken);
-      return response.user;
-    } catch (error) {
-      return rejectWithValue('Invalid email or password');
-    }
+// Логин пользователя
+export const loginUser = createAsyncThunk<
+  TUser,
+  { email: string; password: string },
+  { rejectValue: string }
+>('auth/loginUser', async (userData, { rejectWithValue }) => {
+  try {
+    const response = await loginUserApi(userData);
+    if (!response.success) throw new Error('Ошибка логина');
+    setCookie('accessToken', response.accessToken);
+    localStorage.setItem('refreshToken', response.refreshToken);
+    console.log(
+      'Логин выполнен. Сохранён refreshToken:',
+      response.refreshToken
+    );
+    return response.user;
+  } catch (error: any) {
+    console.error('Ошибка при логине:', error.message || error);
+    return rejectWithValue(error.message || 'Ошибка входа');
   }
-);
+});
 
-// выход и логина
-export const logoutUser = createAsyncThunk(
+// Асинхронное действие: логаут
+export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
   'auth/logoutUser',
   async (_, { rejectWithValue }) => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) return rejectWithValue('Отсутствует refreshToken');
     try {
       await logoutApi();
       deleteCookie('accessToken');
       localStorage.removeItem('refreshToken');
-    } catch (error) {
-      return rejectWithValue('Error during logout');
+      console.log('Логаут выполнен. refreshToken удалён.');
+    } catch (error: any) {
+      console.error('Ошибка при логауте:', error.message || error);
+      return rejectWithValue(error.message || 'Ошибка выхода');
     }
   }
 );
 
-// проверка профиля
-export const fetchUserProfile = createAsyncThunk(
-  'auth/fetchUserProfile',
-  async (_, { rejectWithValue }) => {
-    const accessToken = getCookie('accessToken');
-    if (!accessToken) {
-      return rejectWithValue('User is not authenticated');
-    }
-    try {
-      const response = await getUserApi();
-      return response.user;
-    } catch (error) {
-      return rejectWithValue('Failed to fetch user data');
+// Асинхронное действие: получение профиля
+export const fetchUserProfile = createAsyncThunk<
+  TUser,
+  void,
+  { rejectValue: string }
+>('auth/fetchUserProfile', async (_, { rejectWithValue }) => {
+  try {
+    const response = await getUserApi();
+    if (!response.success) throw new Error('Ошибка получения профиля');
+    return response.user;
+  } catch (error: any) {
+    if (error.message === 'jwt expired') {
+      console.warn('Токен истёк, пытаемся обновить...');
+      try {
+        const refreshData = await refreshToken();
+        setCookie('accessToken', refreshData.accessToken.split('Bearer ')[1]);
+        const retryResponse = await getUserApi();
+        if (!retryResponse.success)
+          throw new Error('Ошибка повторного запроса');
+        return retryResponse.user;
+      } catch (refreshError: any) {
+        console.error('Ошибка обновления токена:', refreshError);
+        return rejectWithValue(
+          'Ошибка авторизации, пожалуйста, войдите снова.'
+        );
+      }
+    } else {
+      console.error('Ошибка профиля:', error);
+      return rejectWithValue('Ошибка авторизации.');
     }
   }
-);
+});
 
-// обновление профиля
-export const updateUserProfile = createAsyncThunk(
-  'auth/updateUserProfile',
-  async (userData: Partial<TUser>, { rejectWithValue }) => {
-    try {
-      const response = await updateUserApi(userData);
-      return response.user;
-    } catch (error) {
-      return rejectWithValue('Failed to update user data');
+// Асинхронное действие: обновление профиля
+export const updateUserProfile = createAsyncThunk<
+  TUser,
+  Partial<TUser>,
+  { rejectValue: string }
+>('auth/updateUserProfile', async (userData, { rejectWithValue }) => {
+  try {
+    const response = await updateUserApi(userData);
+    if (!response.success) {
+      throw new Error('Failed to update user data');
     }
+    return response.user;
+  } catch (error: any) {
+    return rejectWithValue(error.message || 'Failed to update user data');
   }
-);
+});
 
-// слайс
+// Слайс авторизации
+// Слайс авторизации
 export const userAuthSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setAuthChecked: (state, action) => {
+    setAuthChecked(state, action: PayloadAction<boolean>) {
       state.isAuthChecked = action.payload;
     }
   },
   extraReducers: (builder) => {
     builder
-      // логин
       .addCase(loginUser.pending, (state) => {
         state.loginUserRequest = true;
         state.loginUserError = null;
@@ -114,45 +142,33 @@ export const userAuthSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loginUserRequest = false;
         state.user = action.payload;
-        state.isAuthChecked = true;
+        state.isAuthChecked = true; // Успешная авторизация
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loginUserRequest = false;
-        state.loginUserError = action.payload as string;
+        state.loginUserError = action.payload || 'Ошибка логина';
       })
-
-      // логаут
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
-        state.isAuthChecked = true;
+        state.isAuthChecked = false;
       })
-
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.authError = action.payload || 'Ошибка логаута';
+      })
       .addCase(fetchUserProfile.pending, (state) => {
-        state.profileRequest = true;
-        state.profileError = null;
+        state.authRequest = true;
+        state.authError = null;
       })
       .addCase(fetchUserProfile.fulfilled, (state, action) => {
-        state.profileRequest = false;
+        state.authRequest = false;
         state.user = action.payload;
-        state.isAuthChecked = true;
+        state.isAuthChecked = true; // Завершаем проверку
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
-        state.profileRequest = false;
-        state.profileError = action.payload as string;
-        state.isAuthChecked = true;
-      })
-
-      .addCase(updateUserProfile.pending, (state) => {
-        state.profileRequest = true;
-        state.profileError = null;
-      })
-      .addCase(updateUserProfile.fulfilled, (state, action) => {
-        state.profileRequest = false;
-        state.user = action.payload;
-      })
-      .addCase(updateUserProfile.rejected, (state, action) => {
-        state.profileRequest = false;
-        state.profileError = action.payload as string;
+        state.authRequest = false;
+        state.authError = action.payload || 'Ошибка авторизации';
+        state.user = null;
+        state.isAuthChecked = true; // Завершаем проверку
       });
   }
 });

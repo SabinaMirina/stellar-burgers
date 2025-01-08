@@ -14,6 +14,26 @@ import { ordersSlice } from '../slices/orderSlice';
 import { userAuthSlice } from '../slices/userAuthSlice';
 import { allordersSlice } from '../slices/allOrdersSlice';
 
+// cохранение состояния
+const loadState = () => {
+  try {
+    const serializedState = localStorage.getItem('reduxState');
+    return serializedState ? JSON.parse(serializedState) : undefined;
+  } catch (error) {
+    console.error('Ошибка загрузки состояния:', error);
+    return undefined;
+  }
+};
+
+const saveState = (state: RootState) => {
+  try {
+    const serializedState = JSON.stringify(state);
+    localStorage.setItem('reduxState', serializedState);
+  } catch (error) {
+    console.error('Ошибка сохранения состояния:', error);
+  }
+};
+
 // корневой редюсер
 const rootReducer = combineReducers({
   allorders: allordersSlice.reducer,
@@ -25,11 +45,14 @@ const rootReducer = combineReducers({
   burgerConstructor: burgerConstructorSlice.reducer
 });
 
-// хранилище redux
+// хранилище
 const store = configureStore({
   reducer: rootReducer,
-  devTools: process.env.NODE_ENV !== 'production'
+  devTools: process.env.NODE_ENV !== 'production',
+  preloadedState: loadState()
 });
+
+store.subscribe(() => saveState(store.getState()));
 
 export type RootState = ReturnType<typeof rootReducer>;
 

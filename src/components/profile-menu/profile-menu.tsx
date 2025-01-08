@@ -12,14 +12,22 @@ export const ProfileMenu: FC = () => {
 
   //логаут
   const handleLogout = () => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    console.log('Проверка перед выходом. refreshToken:', refreshToken);
+
+    if (!refreshToken) {
+      console.error('Ошибка: отсутствует refreshToken');
+      return;
+    }
+
     dispatch(logoutUser())
       .unwrap()
       .then(() => {
         console.log('Вы успешно вышли из аккаунта');
-        navigate('/login'); // Перенаправляем на /login без сброса isAuthChecked
+        navigate('/login');
       })
       .catch((err) => {
-        console.error('Ошибка при выходе из аккаунта:', err);
+        console.error('Ошибка при выходе:', err);
       });
   };
 
