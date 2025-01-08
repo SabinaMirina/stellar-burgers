@@ -24,8 +24,9 @@ export const Login: FC = () => {
       ).unwrap();
 
       if (resultAction) {
-        const redirectTo = location.state?.from?.pathname || '/';
-        navigate(redirectTo);
+        // Определяем, куда перенаправить пользователя
+        const redirectTo = location.state?.from?.pathname || '/profile';
+        navigate(redirectTo); // Перенаправляем
       }
     } catch (error) {
       console.error('Login error:', error);
