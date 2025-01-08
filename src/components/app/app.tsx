@@ -21,7 +21,7 @@ import {
   useLocation
 } from 'react-router-dom';
 import { ProtectedRoute } from '../protected-route';
-import { useDispatch } from '../../services/store';
+import { RootState, useDispatch, useSelector } from '../../services/store';
 import { fetchUserProfile, setAuthChecked } from '../../slices/userAuthSlice';
 import { getCookie } from '../../utils/cookie';
 import { Preloader } from '../ui/preloader';
@@ -29,35 +29,15 @@ import { refreshToken } from '@api';
 
 const App = () => {
   const dispatch = useDispatch();
-
-  const initAuthCheck = async () => {
-    let accessToken = getCookie('accessToken');
-
-    if (!accessToken) {
-      console.warn('Access token отсутствует, пытаемся обновить...');
-      try {
-        const refreshData = await refreshToken();
-        accessToken = refreshData.accessToken;
-      } catch (error) {
-        console.error('Ошибка при обновлении токена:', error);
-        localStorage.removeItem('refreshToken');
-        dispatch(setAuthChecked(true));
-        return; // Завершить проверку
-      }
-    }
-
-    try {
-      await dispatch(fetchUserProfile()).unwrap();
-    } catch (error) {
-      console.error('Ошибка проверки пользователя:', error);
-    } finally {
-      dispatch(setAuthChecked(true));
-    }
-  };
+  const { isAuthChecked } = useSelector((state: RootState) => state.userAuth);
 
   useEffect(() => {
-    initAuthCheck();
-  }, []);
+    if (!isAuthChecked) {
+      dispatch(fetchUserProfile()).catch(() => {
+        console.error('Ошибка проверки токена');
+      });
+    }
+  }, [dispatch, isAuthChecked]);
 
   return (
     <Router>

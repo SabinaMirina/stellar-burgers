@@ -85,7 +85,6 @@ export const fetchUserProfile = createAsyncThunk<
     return response.user;
   } catch (error: any) {
     if (error.message === 'jwt expired') {
-      console.warn('Токен истёк, пытаемся обновить...');
       try {
         const refreshData = await refreshToken();
         setCookie('accessToken', refreshData.accessToken.split('Bearer ')[1]);

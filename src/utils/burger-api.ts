@@ -35,23 +35,37 @@ export const refreshToken = (): Promise<TRefreshResponse> =>
       return refreshData;
     });
 
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+const subscribeTokenRefresh = (callback: (token: string) => void) => {
+  refreshSubscribers.push(callback);
+};
+
+const onTokenRefreshed = (newToken: string) => {
+  refreshSubscribers.forEach((callback) => callback(newToken));
+  refreshSubscribers = [];
+};
+
 export const fetchWithRefresh = async <T>(
   url: RequestInfo,
   options: RequestInit
 ) => {
+  if (!getCookie('accessToken')) {
+    return Promise.reject({ message: 'Нет токена' }); // Проверяем, есть ли токен
+  }
   try {
     const res = await fetch(url, options);
     return await checkResponse<T>(res);
   } catch (err) {
     if ((err as { message: string }).message === 'jwt expired') {
-      console.warn('Токен истёк, обновляем...');
       const refreshData = await refreshToken();
       if (options.headers) {
         (options.headers as { [key: string]: string }).authorization =
-          refreshData.accessToken.split('Bearer ')[1];
+          `Bearer ${refreshData.accessToken}`;
       }
-      const res = await fetch(url, options);
-      return await checkResponse<T>(res);
+      const retryRes = await fetch(url, options);
+      return await checkResponse<T>(retryRes);
     } else {
       return Promise.reject(err);
     }
