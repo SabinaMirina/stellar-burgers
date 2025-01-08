@@ -44,13 +44,17 @@ export const loginUser = createAsyncThunk<
     if (!response.success) throw new Error('Ошибка логина');
     setCookie('accessToken', response.accessToken);
     localStorage.setItem('refreshToken', response.refreshToken);
-    console.log(
-      'Логин выполнен. Сохранён refreshToken:',
-      response.refreshToken
-    );
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(
+        'Логин выполнен. Сохранён refreshToken:',
+        response.refreshToken
+      );
+    }
     return response.user;
   } catch (error: any) {
-    console.error('Ошибка при логине:', error.message || error);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('Ошибка при логине:', error.message || error);
+    }
     return rejectWithValue(error.message || 'Ошибка входа');
   }
 });
@@ -59,16 +63,26 @@ export const loginUser = createAsyncThunk<
 export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
   'auth/logoutUser',
   async (_, { rejectWithValue }) => {
-    const refreshToken = localStorage.getItem('refreshToken');
-    if (!refreshToken) return rejectWithValue('Отсутствует refreshToken');
     try {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (!refreshToken) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('Refresh token is missing during logout.');
+        }
+        return rejectWithValue('Refresh token is missing.');
+      }
+
       await logoutApi();
       deleteCookie('accessToken');
       localStorage.removeItem('refreshToken');
-      console.log('Логаут выполнен. refreshToken удалён.');
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('Logout successful. Tokens cleared.');
+      }
     } catch (error: any) {
-      console.error('Ошибка при логауте:', error.message || error);
-      return rejectWithValue(error.message || 'Ошибка выхода');
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('Logout failed:', error.message || error);
+      }
+      return rejectWithValue(error.message || 'Logout failed.');
     }
   }
 );
@@ -79,6 +93,14 @@ export const fetchUserProfile = createAsyncThunk<
   void,
   { rejectValue: string }
 >('auth/fetchUserProfile', async (_, { rejectWithValue }) => {
+  const token = getCookie('accessToken');
+  if (!token) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('Access token is missing when fetching user profile.');
+    }
+    return rejectWithValue('Access token is missing.');
+  }
+
   try {
     const response = await getUserApi();
     if (!response.success) throw new Error('Ошибка получения профиля');
@@ -92,14 +114,18 @@ export const fetchUserProfile = createAsyncThunk<
         if (!retryResponse.success)
           throw new Error('Ошибка повторного запроса');
         return retryResponse.user;
-      } catch (refreshError: any) {
-        console.error('Ошибка обновления токена:', refreshError);
+      } catch (refreshError) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('Ошибка обновления токена:', refreshError);
+        }
         return rejectWithValue(
           'Ошибка авторизации, пожалуйста, войдите снова.'
         );
       }
     } else {
-      console.error('Ошибка профиля:', error);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('Ошибка профиля:', error);
+      }
       return rejectWithValue('Ошибка авторизации.');
     }
   }
@@ -118,11 +144,13 @@ export const updateUserProfile = createAsyncThunk<
     }
     return response.user;
   } catch (error: any) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('Ошибка обновления профиля:', error.message || error);
+    }
     return rejectWithValue(error.message || 'Failed to update user data');
   }
 });
 
-// Слайс авторизации
 // Слайс авторизации
 export const userAuthSlice = createSlice({
   name: 'auth',

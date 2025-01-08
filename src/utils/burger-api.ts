@@ -51,24 +51,32 @@ export const fetchWithRefresh = async <T>(
   url: RequestInfo,
   options: RequestInit
 ) => {
-  if (!getCookie('accessToken')) {
-    return Promise.reject({ message: 'Нет токена' }); // Проверяем, есть ли токен
-  }
   try {
     const res = await fetch(url, options);
     return await checkResponse<T>(res);
   } catch (err) {
-    if ((err as { message: string }).message === 'jwt expired') {
-      const refreshData = await refreshToken();
-      if (options.headers) {
-        (options.headers as { [key: string]: string }).authorization =
-          `Bearer ${refreshData.accessToken}`;
-      }
-      const retryRes = await fetch(url, options);
-      return await checkResponse<T>(retryRes);
-    } else {
-      return Promise.reject(err);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('Fetch error:', err); // Логируем только в dev
     }
+    if ((err as { message: string }).message === 'jwt expired') {
+      try {
+        const refreshData = await refreshToken();
+        const retryRes = await fetch(url, {
+          ...options,
+          headers: {
+            ...options.headers,
+            authorization: `Bearer ${refreshData.accessToken}`
+          }
+        });
+        return await checkResponse<T>(retryRes);
+      } catch (refreshError) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('Token refresh failed:', refreshError);
+        }
+        return Promise.reject(refreshError);
+      }
+    }
+    return Promise.reject(err);
   }
 };
 
