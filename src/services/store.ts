@@ -35,7 +35,7 @@ const saveState = (state: RootState) => {
 };
 
 // корневой редюсер
-const rootReducer = combineReducers({
+export const rootReducer = combineReducers({
   allorders: allordersSlice.reducer,
   orders: ordersSlice.reducer,
   userRegister: userRegisterSlice.reducer,
