@@ -1,3 +1,17 @@
+const SELECTORS = {
+  ingredientItem: '[data-testid="ingredient-item"]',
+  constructorBun: '[data-testid="constructor-bun"]',
+  constructorFilling: '[data-testid="constructor-filling"]',
+  modal: '[data-testid="modal"]',
+  modalCloseButton: '[data-testid="modal"] [data-testid="close-button"]',
+  modalOverlay: '[data-testid="modal-overlay"]',
+  constructorTotalButton: '[data-testid="constructor-total"] button',
+  constructorItem: '[data-testid="constructor-item"]',
+  orderButton: '[data-testid="order-button"]',
+};
+
+const testUrl = 'http://localhost:4000';
+
 describe('Добавление ингредиента из списка в конструктор', () => {
   beforeEach(() => {
     // Мокаем запросы для получения ингредиентов
@@ -6,7 +20,7 @@ describe('Добавление ингредиента из списка в ко�
     }).as('getIngredients');
 
     cy.setCookie('refreshToken', 'test-refresh-token');
-    cy.visit('http://localhost:4000/');
+    cy.visit(testUrl);
   });
 
   it('should add a bun and a filling to the constructor', () => {
@@ -14,27 +28,27 @@ describe('Добавление ингредиента из списка в ко�
     cy.wait('@getIngredients');
 
     // Добавляем булку в конструктор
-    cy.get('[data-testid="ingredient-item"]')
+    cy.get(SELECTORS.ingredientItem)
       .contains('Краторная булка N-200i')
       .parent()
       .find('button')
       .click();
 
     // Проверяем, что булка добавлена в конструктор
-    cy.get('[data-testid="constructor-bun"]', { timeout: 10000 }).should(
+    cy.get(SELECTORS.constructorBun, { timeout: 10000 }).should(
       'contain',
       'Краторная булка N-200i'
     );
 
     // Добавляем начинку в конструктор
-    cy.get('[data-testid="ingredient-item"]')
+    cy.get(SELECTORS.ingredientItem)
       .contains('Филе Lumina')
       .parent()
       .find('button')
       .click();
 
     // Проверяем, что начинка добавлена в конструктор
-    cy.get('[data-testid="constructor-filling"]').should(
+    cy.get(SELECTORS.constructorFilling).should(
       'contain',
       'Филе Lumina'
     );
@@ -50,7 +64,7 @@ describe('Работа модальных окон', () => {
     }).as('getIngredients');
    
     cy.setCookie('refreshToken', 'test-refresh-token');
-    cy.visit('http://localhost:4000/');
+    cy.visit(testUrl);
   });
 
   it('should open the ingredient modal on click and close it on cross or overlay click', () => {
@@ -58,36 +72,36 @@ describe('Работа модальных окон', () => {
     cy.wait('@getIngredients');
 
     // Клик на изображение ингредиента
-    cy.get('[data-testid="ingredient-item"]')
+    cy.get(SELECTORS.ingredientItem)
       .contains('Краторная булка N-200i')
       .parent()
       .find('img')
       .click();
 
     // Проверяем, что модальное окно открылось
-    cy.get('[data-testid="modal"]').should('exist');
-    cy.get('[data-testid="modal"]').should('contain', 'Краторная булка N-200i');
+    cy.get(SELECTORS.modal).should('exist');
+    cy.get(SELECTORS.modal).should('contain', 'Краторная булка N-200i');
 
     // Закрытие модального окна по клику на крестик
-    cy.get('[data-testid="modal"]')
-      .find('[data-testid="close-button"]')
-      .click();
+   
+    cy.get(SELECTORS.modalCloseButton).click();
+    cy.get(SELECTORS.modal).should('not.exist');
 
     // Проверяем, что модальное окно закрылось
-    cy.get('[data-testid="modal"]').should('not.exist');
+    cy.get(SELECTORS.modal).should('not.exist');
 
     // Открываем модальное окно снова
-    cy.get('[data-testid="ingredient-item"]')
+    cy.get(SELECTORS.ingredientItem)
       .contains('Филе Lumina')
       .parent()
       .find('img')
       .click();
 
     // Закрытие модального окна по клику на оверлей
-    cy.get('[data-testid="modal-overlay"]').click({ force: true });
+   cy.get(SELECTORS.modalOverlay).click({ force: true });
 
     // Проверяем, что модальное окно закрылось
-    cy.get('[data-testid="modal"]').should('not.exist');
+    cy.get(SELECTORS.modal).should('not.exist');
   });
 });
 
@@ -112,7 +126,7 @@ describe('Оформление заказа', () => {
       fixture: 'order.json',
     }).as('postOrder');
 
-    cy.visit('http://localhost:4000/');
+    cy.visit(testUrl);
     cy.wait('@getUser');
   });
 
@@ -121,21 +135,21 @@ describe('Оформление заказа', () => {
     cy.wait('@getIngredients');
 
     // Добавляем булку в конструктор
-    cy.get('[data-testid="ingredient-item"]')
+    cy.get(SELECTORS.ingredientItem)
       .contains('Краторная булка N-200i')
       .parent()
       .find('button')
       .click();
 
     // Добавляем начинку в конструктор
-    cy.get('[data-testid="ingredient-item"]')
+    cy.get(SELECTORS.ingredientItem)
       .contains('Филе Lumina')
       .parent()
       .find('button')
       .click();
 
     // Нажимаем на кнопку "Оформить заказ"
-    cy.get('[data-testid="constructor-total"] button').click();
+    cy.get(SELECTORS.constructorTotalButton).click();
 
     // Ждем запрос на оформление заказа
     cy.wait('@postOrder');
@@ -146,13 +160,13 @@ describe('Оформление заказа', () => {
       .and('contain', '65162');
 
     // Закрываем модальное окно
-    cy.get('[data-testid="modal"] [data-testid="close-button"]').click();
+    cy.get(SELECTORS.modalCloseButton).click();
 
     // Проверяем, что модальное окно закрылось
-    cy.get('[data-testid="modal"]').should('not.exist');
+    cy.get(SELECTORS.modal).should('not.exist');
 
     // Проверяем, что конструктор пуст
-    cy.get('[data-testid="constructor-item"]').should('have.length', '0');
-    cy.get('[data-testid="order-button"]').should('be.disabled');
+    cy.get(SELECTORS.constructorItem).should('have.length', '0');
+    cy.get(SELECTORS.orderButton).should('be.disabled');
   });
 });
