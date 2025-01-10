@@ -22,5 +22,4 @@ class LocalStorageMock {
   }
 }
 
-// Attach the mock to the global object
 global.localStorage = new LocalStorageMock() as unknown as Storage;

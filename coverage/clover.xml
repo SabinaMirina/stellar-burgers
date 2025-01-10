@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1736460142398" clover="3.2.0">
-  <project timestamp="1736460142399" name="All files">
-    <metrics statements="1002" coveredstatements="591" conditionals="33" coveredconditionals="28" methods="40" coveredmethods="13" elements="1075" coveredelements="632" complexity="0" loc="1002" ncloc="1002" packages="3" files="10" classes="10"/>
+<coverage generated="1736537175027" clover="3.2.0">
+  <project timestamp="1736537175027" name="All files">
+    <metrics statements="1007" coveredstatements="593" conditionals="33" coveredconditionals="28" methods="40" coveredmethods="13" elements="1080" coveredelements="634" complexity="0" loc="1007" ncloc="1007" packages="3" files="10" classes="10"/>
     <package name="services">
-      <metrics statements="64" coveredstatements="54" conditionals="3" coveredconditionals="1" methods="3" coveredmethods="1"/>
+      <metrics statements="69" coveredstatements="56" conditionals="3" coveredconditionals="1" methods="3" coveredmethods="1"/>
       <file name="store.ts" path="C:\Users\Sabina\dev\stellar-burgers\src\services\store.ts">
-        <metrics statements="64" coveredstatements="54" conditionals="3" coveredconditionals="1" methods="3" coveredmethods="1"/>
+        <metrics statements="69" coveredstatements="56" conditionals="3" coveredconditionals="1" methods="3" coveredmethods="1"/>
         <line num="1" count="1" type="stmt"/>
         <line num="2" count="1" type="stmt"/>
         <line num="3" count="1" type="stmt"/>
@@ -34,16 +34,16 @@
         <line num="26" count="1" type="stmt"/>
         <line num="27" count="1" type="stmt"/>
         <line num="28" count="1" type="stmt"/>
-        <line num="29" count="0" type="stmt"/>
+        <line num="29" count="1" type="stmt"/>
         <line num="30" count="0" type="stmt"/>
         <line num="31" count="0" type="stmt"/>
         <line num="32" count="0" type="stmt"/>
         <line num="33" count="0" type="stmt"/>
         <line num="34" count="0" type="stmt"/>
         <line num="35" count="0" type="stmt"/>
-        <line num="36" count="1" type="stmt"/>
-        <line num="37" count="1" type="stmt"/>
-        <line num="38" count="1" type="stmt"/>
+        <line num="36" count="0" type="stmt"/>
+        <line num="37" count="0" type="stmt"/>
+        <line num="38" count="0" type="stmt"/>
         <line num="39" count="1" type="stmt"/>
         <line num="40" count="1" type="stmt"/>
         <line num="41" count="1" type="stmt"/>
@@ -64,12 +64,17 @@
         <line num="56" count="1" type="stmt"/>
         <line num="57" count="1" type="stmt"/>
         <line num="58" count="1" type="stmt"/>
-        <line num="59" count="1" type="stmt"/>
+        <line num="59" count="0" type="stmt"/>
         <line num="60" count="1" type="stmt"/>
         <line num="61" count="1" type="stmt"/>
         <line num="62" count="1" type="stmt"/>
         <line num="63" count="1" type="stmt"/>
         <line num="64" count="1" type="stmt"/>
+        <line num="65" count="1" type="stmt"/>
+        <line num="66" count="1" type="stmt"/>
+        <line num="67" count="1" type="stmt"/>
+        <line num="68" count="1" type="stmt"/>
+        <line num="69" count="1" type="stmt"/>
       </file>
     </package>
     <package name="slices">
