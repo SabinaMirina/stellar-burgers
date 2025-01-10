@@ -8,25 +8,22 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.(js|jsx)$/,
+        test: /\.(js|jsx)$/i,
         exclude: /node_modules/,
         use: ['babel-loader']
       },
       {
-        test: /\.(ts)x?$/,
+        test: /\.(ts|tsx)$/i,
         exclude: /node_modules/,
-        use: {
-          loader: 'ts-loader'
-        }
+        use: 'ts-loader'
       },
       {
-        test: /\.css$/,
-        exclude: /\.module\.css$/,
+        test: /\.css$/i,
+        exclude: /\.module\.css$/i,
         use: ['style-loader', 'css-loader']
       },
       {
         test: /\.module\.css$/i,
-        exclude: /node_modules/,
         use: [
           'style-loader',
           {
@@ -38,11 +35,7 @@ module.exports = {
         ]
       },
       {
-        test: /\.(jpg|jpeg|png|svg)$/,
-        type: 'asset/resource'
-      },
-      {
-        test: /\.(woff|woff2)$/,
+        test: /\.(jpg|jpeg|png|svg|woff|woff2)$/i,
         type: 'asset/resource'
       }
     ]
@@ -58,16 +51,14 @@ module.exports = {
   ],
   resolve: {
     extensions: [
-      '*',
       '.js',
       '.jsx',
       '.ts',
       '.tsx',
       '.json',
       '.css',
-      '.scss',
-      '.png',
       '.svg',
+      '.png',
       '.jpg'
     ],
     alias: {
@@ -83,12 +74,15 @@ module.exports = {
   },
   output: {
     path: path.resolve(__dirname, './dist'),
-    filename: 'bundle.js'
+    filename: 'bundle.js',
+    publicPath: '/' // Добавляем publicPath
   },
   devServer: {
     static: path.join(__dirname, './dist'),
     compress: true,
-    historyApiFallback: true,
-    port: 4000
+    historyApiFallback: true, // Включаем поддержку маршрутизации React Router
+    port: 4000,
+    open: true,
+    hot: true // Включаем Hot Module Replacement
   }
 };

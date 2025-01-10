@@ -1,14 +1,163 @@
-import { ConstructorPage } from '@pages';
-import '../../index.css';
-import styles from './app.module.css';
+import { AppHeader, IngredientDetails, OrderInfo } from '@components';
+import {
+  ConstructorPage,
+  Feed,
+  Login,
+  Register,
+  ForgotPassword,
+  ResetPassword,
+  Profile,
+  ProfileOrders,
+  NotFound404
+} from '@pages';
+import React, { useEffect } from 'react';
 
-import { AppHeader } from '@components';
+import { Modal } from '../modal/modal';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
+  useLocation
+} from 'react-router-dom';
+import { ProtectedRoute } from '../protected-route';
+import { RootState, useDispatch, useSelector } from '../../services/store';
+import { fetchUserProfile, setAuthChecked } from '../../slices/userAuthSlice';
+import { getCookie } from '../../utils/cookie';
+import { Preloader } from '../ui/preloader';
+import { refreshToken } from '@api';
 
-const App = () => (
-  <div className={styles.app}>
-    <AppHeader />
-    <ConstructorPage />
-  </div>
-);
+const App = () => {
+  const dispatch = useDispatch();
+  const { isAuthChecked } = useSelector((state: RootState) => state.userAuth);
+
+  useEffect(() => {
+    if (!isAuthChecked) {
+      dispatch(fetchUserProfile()).catch(() => {
+        console.error('Ошибка проверки токена');
+      });
+    }
+  }, [dispatch, isAuthChecked]);
+
+  return (
+    <Router>
+      <AppRoutes />
+    </Router>
+  );
+};
+
+export const AppRoutes = () => {
+  const location = useLocation();
+  const state = location.state as { background?: Location };
+  const navigate = useNavigate();
+
+  return (
+    <div className='app'>
+      <AppHeader />
+      <Routes location={state?.background || location}>
+        <Route path='/' element={<ConstructorPage />} />
+        <Route path='/feed' element={<Feed />} />
+        <Route
+          path='/login'
+          element={
+            <ProtectedRoute onlyUnAuth>
+              <Login />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/register'
+          element={
+            <ProtectedRoute onlyUnAuth>
+              <Register />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/forgot-password'
+          element={
+            <ProtectedRoute onlyUnAuth>
+              <ForgotPassword />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/reset-password'
+          element={
+            <ProtectedRoute onlyUnAuth>
+              <ResetPassword />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/profile'
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/profile/orders'
+          element={
+            <ProtectedRoute>
+              <ProfileOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route path='/ingredients/:id' element={<IngredientDetails />} />
+        <Route path='/feed/:number' element={<OrderInfo />} />
+        <Route
+          path='/profile/orders/:number'
+          element={
+            <ProtectedRoute>
+              <OrderInfo />
+            </ProtectedRoute>
+          }
+        />
+        <Route path='*' element={<NotFound404 />} />
+      </Routes>
+
+      {/* Модальные окна */}
+      {state?.background && (
+        <Routes>
+          <Route
+            path='/ingredients/:id'
+            element={
+              <Modal
+                title='Ingredient Details'
+                onClose={() => navigate('/', { replace: true })}
+              >
+                <IngredientDetails />
+              </Modal>
+            }
+          />
+          <Route
+            path='/feed/:number'
+            element={
+              <Modal
+                title='Order Details'
+                onClose={() => navigate('/feed', { replace: true })}
+              >
+                <OrderInfo />
+              </Modal>
+            }
+          />
+          <Route
+            path='/profile/orders/:number'
+            element={
+              <Modal
+                title='Order Info'
+                onClose={() => navigate('/profile/orders', { replace: true })}
+              >
+                <OrderInfo />
+              </Modal>
+            }
+          />
+        </Routes>
+      )}
+    </div>
+  );
+};
 
 export default App;

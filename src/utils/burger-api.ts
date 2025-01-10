@@ -35,6 +35,18 @@ export const refreshToken = (): Promise<TRefreshResponse> =>
       return refreshData;
     });
 
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+const subscribeTokenRefresh = (callback: (token: string) => void) => {
+  refreshSubscribers.push(callback);
+};
+
+const onTokenRefreshed = (newToken: string) => {
+  refreshSubscribers.forEach((callback) => callback(newToken));
+  refreshSubscribers = [];
+};
+
 export const fetchWithRefresh = async <T>(
   url: RequestInfo,
   options: RequestInit
@@ -43,17 +55,28 @@ export const fetchWithRefresh = async <T>(
     const res = await fetch(url, options);
     return await checkResponse<T>(res);
   } catch (err) {
-    if ((err as { message: string }).message === 'jwt expired') {
-      const refreshData = await refreshToken();
-      if (options.headers) {
-        (options.headers as { [key: string]: string }).authorization =
-          refreshData.accessToken;
-      }
-      const res = await fetch(url, options);
-      return await checkResponse<T>(res);
-    } else {
-      return Promise.reject(err);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('Fetch error:', err);
     }
+    if ((err as { message: string }).message === 'jwt expired') {
+      try {
+        const refreshData = await refreshToken();
+        const retryRes = await fetch(url, {
+          ...options,
+          headers: {
+            ...options.headers,
+            authorization: `Bearer ${refreshData.accessToken}`
+          }
+        });
+        return await checkResponse<T>(retryRes);
+      } catch (refreshError) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('Token refresh failed:', refreshError);
+        }
+        return Promise.reject(refreshError);
+      }
+    }
+    return Promise.reject(err);
   }
 };
 
@@ -99,7 +122,7 @@ export const getOrdersApi = () =>
     return Promise.reject(data);
   });
 
-type TNewOrderResponse = TServerResponse<{
+export type TNewOrderResponse = TServerResponse<{
   order: TOrder;
   name: string;
 }>;

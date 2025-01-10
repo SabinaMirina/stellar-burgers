@@ -1,0 +1,16 @@
+{
+    "success": true,
+    "order": {
+      "_id": "64f9d0a1c2a9a5b7e6e8a321",
+      "status": "created",
+      "number": 65162,
+      "name": "Галактический бургер",
+      "ingredients": [
+        "60d3b41abdacab0026a733c6", 
+        "60d3b41abdacab0026a733c8", 
+        "60d3b41abdacab0026a733c9"
+      ],
+      "createdAt": "2025-01-10T14:34:56.789Z",
+      "updatedAt": "2025-01-10T14:34:56.789Z"
+    }
+  }
