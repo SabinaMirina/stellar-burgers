@@ -39,4 +39,42 @@ describe('Burger Constructor Page', () => {
       'Филе Lumina'
     );
   });
+
+  it('should open the ingredient modal on click and close it on cross or overlay click', () => {
+    // Убеждаемся, что ингредиенты загружены
+    cy.wait('@getIngredients');
+  
+    // Клик на изображение ингредиента
+    cy.get('[data-testid="ingredient-item"]')
+      .contains('Краторная булка N-200i') // Название из моков
+      .parent()
+      .find('img') // Находим изображение ингредиента
+      .click();
+  
+    // Проверяем, что модальное окно открылось
+    cy.get('[data-testid="modal"]').should('exist');
+    cy.get('[data-testid="modal"]').should('contain', 'Краторная булка N-200i');
+  
+    // Закрытие модального окна по клику на крестик
+    cy.get('[data-testid="modal"]')
+      .find('[data-testid="close-button"]') // Находим кнопку закрытия
+      .click();
+  
+    // Проверяем, что модальное окно закрылось
+    cy.get('[data-testid="modal"]').should('not.exist');
+  
+    // Открываем модальное окно снова
+    cy.get('[data-testid="ingredient-item"]')
+      .contains('Филе Lumina')
+      .parent()
+      .find('img')
+      .click();
+  
+    // Закрытие модального окна по клику на оверлей
+    cy.get('[data-testid="modal-overlay"]').click({ force: true });
+  
+    // Проверяем, что модальное окно закрылось
+    cy.get('[data-testid="modal"]').should('not.exist');
+  });
+
 });
