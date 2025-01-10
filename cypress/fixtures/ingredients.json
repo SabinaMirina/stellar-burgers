@@ -1,0 +1,57 @@
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "60d3b41abdacab0026a733c6",
+      "name": "Краторная булка N-200i",
+      "type": "bun",
+      "proteins": 80,
+      "fat": 24,
+      "carbohydrates": 53,
+      "calories": 420,
+      "price": 125,
+      "image": "https://code.s3.yandex.net/react/code/bun-02.png",
+      "image_large": "https://code.s3.yandex.net/react/code/bun-02-large.png",
+      "image_mobile": "https://code.s3.yandex.net/react/code/bun-02-mobile.png"
+    },
+    {
+      "_id": "60d3b41abdacab0026a733c8",
+      "name": "Филе Lumina",
+      "type": "main",
+      "proteins": 120,
+      "fat": 30,
+      "carbohydrates": 10,
+      "calories": 300,
+      "price": 300,
+      "image": "https://code.s3.yandex.net/react/code/meat-03.png",
+      "image_large": "https://code.s3.yandex.net/react/code/meat-03-large.png",
+      "image_mobile": "https://code.s3.yandex.net/react/code/meat-03-mobile.png"
+    },
+    {
+      "_id": "60d3b41abdacab0026a733c9",
+      "name": "Соус фирменный Space Sauce",
+      "type": "sauce",
+      "proteins": 50,
+      "fat": 22,
+      "carbohydrates": 11,
+      "calories": 100,
+      "price": 80,
+      "image": "https://code.s3.yandex.net/react/code/sauce-03.png",
+      "image_large": "https://code.s3.yandex.net/react/code/sauce-03-large.png",
+      "image_mobile": "https://code.s3.yandex.net/react/code/sauce-03-mobile.png"
+    },
+    {
+      "_id": "60d3b41abdacab0026a733ca",
+      "name": "Плоды метеорита",
+      "type": "main",
+      "proteins": 45,
+      "fat": 15,
+      "carbohydrates": 25,
+      "calories": 250,
+      "price": 200,
+      "image": "https://code.s3.yandex.net/react/code/meat-04.png",
+      "image_large": "https://code.s3.yandex.net/react/code/meat-04-large.png",
+      "image_mobile": "https://code.s3.yandex.net/react/code/meat-04-mobile.png"
+    }
+  ]
+}

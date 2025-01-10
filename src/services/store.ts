@@ -14,8 +14,8 @@ import { ordersSlice } from '../slices/orderSlice';
 import { userAuthSlice } from '../slices/userAuthSlice';
 import { allordersSlice } from '../slices/allOrdersSlice';
 
-// cохранение состояния
-const loadState = () => {
+// Сохранение части состояния
+const loadState = (): Partial<RootState> | undefined => {
   try {
     const serializedState = localStorage.getItem('reduxState');
     return serializedState ? JSON.parse(serializedState) : undefined;
@@ -25,16 +25,19 @@ const loadState = () => {
   }
 };
 
+// Сохранение только нужных частей состояния
 const saveState = (state: RootState) => {
   try {
-    const serializedState = JSON.stringify(state);
+    const serializedState = JSON.stringify({
+      userAuth: state.userAuth // Только userAuth сохраняется
+    });
     localStorage.setItem('reduxState', serializedState);
   } catch (error) {
     console.error('Ошибка сохранения состояния:', error);
   }
 };
 
-// корневой редюсер
+// Корневой редюсер
 export const rootReducer = combineReducers({
   allorders: allordersSlice.reducer,
   orders: ordersSlice.reducer,
@@ -45,14 +48,16 @@ export const rootReducer = combineReducers({
   burgerConstructor: burgerConstructorSlice.reducer
 });
 
-// хранилище
+// Хранилище
 const store = configureStore({
   reducer: rootReducer,
   devTools: process.env.NODE_ENV !== 'production',
-  preloadedState: loadState()
+  preloadedState: loadState() // Предзагрузка состояния
 });
 
-store.subscribe(() => saveState(store.getState()));
+store.subscribe(() => {
+  saveState(store.getState()); // Сохраняем состояние при изменениях
+});
 
 export type RootState = ReturnType<typeof rootReducer>;
 

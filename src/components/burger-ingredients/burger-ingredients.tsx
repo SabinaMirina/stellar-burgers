@@ -5,10 +5,9 @@ import { fetchIngredients } from '../../slices/ingredientsSlice';
 
 import { TTabMode } from '@utils-types';
 import { BurgerIngredientsUI } from '../ui/burger-ingredients';
-import { RootState } from '../../services/store';
 
 export const BurgerIngredients: FC = () => {
-  const dispatch = useDispatch(); // хук
+  const dispatch = useDispatch();
 
   // Получаем данные из Redux store
   const { ingredients, loading, error } = useSelector(
@@ -20,29 +19,31 @@ export const BurgerIngredients: FC = () => {
     dispatch(fetchIngredients());
   }, [dispatch]);
 
+  // Добавляем проверку структуры данных
+  const isValidIngredient = (item: any): boolean =>
+    item && typeof item === 'object' && 'type' in item && 'name' in item;
+
+  // Проверяем массив ингредиентов перед фильтрацией
+  const validIngredients = Array.isArray(ingredients)
+    ? ingredients.filter(isValidIngredient)
+    : [];
+
   // Фильтрация ингредиентов по типу
-  const buns = ingredients.filter((item) => item.type === 'bun');
-  const mains = ingredients.filter((item) => item.type === 'main');
-  const sauces = ingredients.filter((item) => item.type === 'sauce');
+  const buns = validIngredients.filter((item) => item.type === 'bun');
+  const mains = validIngredients.filter((item) => item.type === 'main');
+  const sauces = validIngredients.filter((item) => item.type === 'sauce');
 
   const [currentTab, setCurrentTab] = useState<TTabMode>('bun');
   const titleBunRef = useRef<HTMLHeadingElement>(null);
   const titleMainRef = useRef<HTMLHeadingElement>(null);
   const titleSaucesRef = useRef<HTMLHeadingElement>(null);
 
-  // наблюдатели для видимости секций
-  const [bunsRef, inViewBuns] = useInView({
-    threshold: 0
-  });
-  const [mainsRef, inViewFilling] = useInView({
-    threshold: 0
-  });
-  const [saucesRef, inViewSauces] = useInView({
-    threshold: 0
-  });
+  // Наблюдатели для видимости секций
+  const [bunsRef, inViewBuns] = useInView({ threshold: 0 });
+  const [mainsRef, inViewFilling] = useInView({ threshold: 0 });
+  const [saucesRef, inViewSauces] = useInView({ threshold: 0 });
 
   useEffect(() => {
-    // Обновление текущей вкладки при скролле
     if (inViewBuns) {
       setCurrentTab('bun');
     } else if (inViewSauces) {
@@ -65,6 +66,9 @@ export const BurgerIngredients: FC = () => {
   // Отображение лоадера и ошибки
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
+  if (!Array.isArray(ingredients) || ingredients.length === 0) {
+    return <div>No ingredients available.</div>;
+  }
 
   return (
     <BurgerIngredientsUI
